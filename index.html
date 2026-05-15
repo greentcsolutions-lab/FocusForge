@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusForge — Pomodoro + Heatmap</title>
+
+  <!-- SEO / Social -->
+  <meta name="description" content="Pomodoro timer + daily habit heatmap. No login. No fluff. Just focus." />
+  <meta property="og:title" content="FocusForge" />
+  <meta property="og:description" content="Pomodoro timer + daily heatmap. Track your focus streaks." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#f59e0b" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Favicon: inline SVG as data URI -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d0d0f'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%23f59e0b'%3E⚡%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="app-logo">Focus<span>Forge</span></div>
+    <div class="header-controls">
+      <button id="btn-share" onclick="shareApp()" title="Copy link">⬡ SHARE</button>
+      <button class="icon-btn" id="btn-theme" onclick="toggleTheme()" title="Toggle theme">◐</button>
+      <button class="icon-btn" onclick="openSettings()" title="Settings">⚙</button>
+      <button class="icon-btn" onclick="requestNotificationPermission()" title="Enable notifications">🔔</button>
+    </div>
+  </header>
+
+  <!-- ── Main Grid ──────────────────────────────────────────── -->
+  <div class="main-grid">
+
+    <!-- ── Timer Panel ──────────────────────────────────────── -->
+    <section class="panel timer-panel">
+      <div class="panel-label" id="mode-label">FOCUS SESSION</div>
+
+      <!-- Mode tabs -->
+      <div class="mode-tabs">
+        <button class="mode-tab mode-active" id="btn-work"  onclick="switchMode('work')">
+          ⚡ Focus
+        </button>
+        <button class="mode-tab" id="btn-break" onclick="switchMode('break')">
+          ☁ Break
+        </button>
+      </div>
+
+      <!-- Timer ring -->
+      <div class="timer-center">
+        <div id="timer-container">
+          <svg class="timer-svg" viewBox="0 0 120 120">
+            <circle class="ring-track"    cx="60" cy="60" r="54"/>
+            <circle id="progress-ring"    cx="60" cy="60" r="54"
+              stroke-dasharray="339.29"
+              stroke-dashoffset="0"
+            />
+          </svg>
+          <div id="timer-display">25:00</div>
+        </div>
+
+        <div id="duration-label" style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-muted);letter-spacing:.12em;"></div>
+
+        <div class="timer-controls">
+          <button class="ctrl-btn" id="btn-startstop" onclick="state.running ? pauseTimer() : startTimer()">
+            ▶ START
+          </button>
+          <button class="ctrl-btn" onclick="resetTimer()">↺ RESET</button>
+        </div>
+
+        <div class="kbd-hint">SPACE to start/pause · R to reset</div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-value" id="sessions-today">0</div>
+          <div class="stat-label">Today</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="sessions-total">0</div>
+          <div class="stat-label">All Time</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="streak-count">0</div>
+          <div class="stat-label">🔥 Streak</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Tasks Panel ───────────────────────────────────────── -->
+    <section class="panel" style="grid-column: 1 / -1;">
+      <div class="panel-label">TASK QUEUE</div>
+
+      <div class="task-input-row">
+        <input
+          type="text"
+          id="task-input"
+          placeholder="Add a task and hit Enter…"
+          maxlength="120"
+          autocomplete="off"
+        />
+        <button id="btn-add-task">+ ADD</button>
+      </div>
+
+      <div class="task-list" id="task-list">
+        <!-- Tasks rendered by JS -->
+      </div>
+    </section>
+
+    <!-- ── Heatmap Panel ─────────────────────────────────────── -->
+    <section class="panel heatmap-panel">
+      <div class="heatmap-header">
+        <div class="panel-label" style="margin-bottom:0">35-DAY ACTIVITY</div>
+        <div class="streak-badge">
+          🔥 <strong id="streak-count-2">0</strong> day streak
+        </div>
+      </div>
+
+      <div id="heatmap-grid">
+        <!-- Cells rendered by JS -->
+      </div>
+
+      <div class="heatmap-legend">
+        <span>LESS</span>
+        <div class="legend-cell" style="background:var(--bg-raised);border:1px solid var(--border-dim)"></div>
+        <div class="legend-cell" style="background:#78350f"></div>
+        <div class="legend-cell" style="background:#b45309"></div>
+        <div class="legend-cell" style="background:#d97706"></div>
+        <div class="legend-cell" style="background:#f59e0b"></div>
+        <span>MORE</span>
+      </div>
+    </section>
+
+  </div><!-- /main-grid -->
+
+  <!-- ── Footer ───────────────────────────────────────────────── -->
+  <footer class="app-footer">
+    Created by <a href="https://x.com/thechrisgreen" target="_blank" rel="noopener">Chris Green</a>
+    &nbsp;·&nbsp; MIT License &nbsp;·&nbsp;
+    <a href="https://github.com/chrisgreen" target="_blank" rel="noopener">GitHub</a>
+  </footer>
+
+</div><!-- /app-wrapper -->
+
+
+<!-- ── Settings Modal ───────────────────────────────────────── -->
+<div class="modal-backdrop hidden" id="settings-modal" onclick="if(event.target===this)closeSettings()">
+  <div class="modal">
+    <div class="modal-title">⚙ Timer Settings</div>
+
+    <div class="modal-row">
+      <label>Focus duration (min)</label>
+      <input type="number" id="input-work-mins" min="1" max="90" value="25" />
+    </div>
+
+    <div class="modal-row">
+      <label>Break duration (min)</label>
+      <input type="number" id="input-break-mins" min="1" max="30" value="5" />
+    </div>
+
+    <div class="modal-actions">
+      <button onclick="closeSettings()">Cancel</button>
+      <button class="primary" onclick="saveSettings()">Save & Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Scripts ──────────────────────────────────────────────── -->
+<script src="js/app.js"></script>
+
+
+</body>
+</html>
